@@ -15,9 +15,6 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Advanced Settings -->
-    <string name="incall_vibration">通话震动</string>
-
     <string name="call_notif_unconditionalCF">启用无条件的来电转接</string>
     <string name="call_notif_conditionalCF">启用有条件的来电转接</string>
     <string name="call_notif_MOcall_forwarding">呼出电话已被转接</string>
