@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncResult;
@@ -72,6 +73,9 @@ public class MobileNetworkSettings extends PreferenceActivity
     private static final String BUTTON_ENABLED_NETWORKS_KEY = "enabled_networks_key";
     private static final String BUTTON_SMSC_NUMBER_KEY = "button_smsc_number_key";
     private static final String BUTTON_CARRIER_SETTINGS_KEY = "carrier_settings_key";
+    private static final String BUTTON_BATTERY_MODE_KEY = "button_battery_mode_key";
+    private static final String STORED_NETWORK_TYPE_KEY = "stored_network_type";
+    private static final String STORED_BATTERY_SAVE_STATUS = "battery_save_status";
 
     static final int preferredNetworkMode = Phone.PREFERRED_NT_MODE;
 
@@ -85,11 +89,13 @@ public class MobileNetworkSettings extends PreferenceActivity
     private ListPreference mButtonEnabledNetworks;
     private CheckBoxPreference mButtonDataRoam;
     private CheckBoxPreference mButtonDataEnabled;
+    private CheckBoxPreference mButtonBatteryMode;
     private Preference mLteDataServicePref;
     private Preference mSMSCNumber;
 
     private static final String iface = "rmnet0"; //TODO: this will go away
 
+    private SharedPreferences mStoredNetwork;
     private Phone mPhone;
     private MyHandler mHandler;
     private boolean mOkClicked;
@@ -208,6 +214,13 @@ public class MobileNetworkSettings extends PreferenceActivity
             return true;
         } else if (preference == mSMSCNumber) {
             return true;
+        } else if (preference == mButtonBatteryMode) {
+            if (mButtonBatteryMode.isChecked()) {
+                mStoredNetwork.edit().putInt(STORED_BATTERY_SAVE_STATUS,1).apply();
+            } else {
+                mStoredNetwork.edit().putInt(STORED_BATTERY_SAVE_STATUS,0).apply();
+            }
+            return true;
         } else {
             // if the button is anything but the simple toggle preference,
             // we'll need to disable all preferences to reject all click
@@ -227,6 +240,9 @@ public class MobileNetworkSettings extends PreferenceActivity
         mPhone = PhoneGlobals.getPhone();
         mHandler = new MyHandler();
 
+        mStoredNetwork = mPhone.getContext()
+                               .getSharedPreferences("StoredNetworkType", 0);
+
         try {
             Context con = createPackageContext("com.android.systemui", 0);
             int id = con.getResources().getIdentifier("config_show4GForLTE",
@@ -242,6 +258,7 @@ public class MobileNetworkSettings extends PreferenceActivity
 
         mButtonDataEnabled = (CheckBoxPreference) prefSet.findPreference(BUTTON_DATA_ENABLED_KEY);
         mButtonDataRoam = (CheckBoxPreference) prefSet.findPreference(BUTTON_ROAMING_KEY);
+        mButtonBatteryMode = (CheckBoxPreference) prefSet.findPreference(BUTTON_BATTERY_MODE_KEY);
         mButtonPreferredNetworkMode = (ListPreference) prefSet.findPreference(
                 BUTTON_PREFERED_NETWORK_MODE);
         mButtonEnabledNetworks = (ListPreference) prefSet.findPreference(
